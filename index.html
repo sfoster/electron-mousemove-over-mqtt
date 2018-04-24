@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Mousemove coords over MQTT</title>
+    <style>
+      html, body {
+        height: 100%;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+      }
+      canvas {
+        border: 1px dashed #999;
+      }
+      body.electronA {
+        background-color: #000;
+        color: #fff;
+        padding: 5px;
+      }
+      body.electronB {
+        background-color: #eee;
+        color: #000;
+        padding: 0 5px 0;
+      }
+      h1 {
+        margin: 0.25em 0 0.5em;
+        font-family: sans-serif;
+        font-size: 1.1em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Client</h1>
+    <canvas width="400" height="400"></canvas>
+
+    <script>
+      require('./renderer.js');
+      var config = require('./config');
+
+      const PlayerClient = require('./playerclient');
+      const player = new PlayerClient(Object.assign({}, config));
+
+      const DisplayOutput = require('./displayoutput');
+      const display = new DisplayOutput({
+        node: document.querySelector('canvas'),
+      });
+      player.init();
+
+      const MouseInput = require('./mouseinput');
+      const monitorMousemove = new MouseInput({
+        node: document.querySelector('canvas'),
+        eventType: 'mousemove',
+      });
+      monitorMousemove.onEvent = function(data) {
+       player.sendMessage("positions", data);
+      };
+
+      if (config.CLIENT_ID) {
+        let header = document.querySelector('h1');
+        header.textContent = config.CLIENT_ID;
+        document.body.classList.add(config.CLIENT_ID);
+      }
+    </script>
+  </body>
+</html>
